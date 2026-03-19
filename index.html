@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reputation Playbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0b0d11;--surface:#13161e;--surface2:#1c2030;--border:#242838;
+    --accent:#e8903a;--accent2:#c96b1e;--accent-glow:rgba(232,144,58,.18);
+    --text:#e8eaf0;--muted:#7c8099;--dim:#4a4f66;
+    --green:#4ade80;--red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;
+    --sidebar-w:270px;--font-head:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;
+    --r:10px;--r-lg:16px;--transition:.3s cubic-bezier(.4,0,.2,1);
+  }
+  html{scroll-behavior:smooth}
+  body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-size:15px;line-height:1.7}
+  .sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;transition:transform var(--transition);overflow-y:auto;overflow-x:hidden}
+  .sidebar-logo{padding:28px 24px 20px;border-bottom:1px solid var(--border)}
+  .sidebar-logo .logo-badge{display:inline-flex;align-items:center;gap:8px;background:var(--accent-glow);border:1px solid rgba(232,144,58,.3);border-radius:8px;padding:6px 12px;font-size:11px;font-family:var(--font-head);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+  .sidebar-logo h1{font-family:var(--font-head);font-size:17px;font-weight:800;color:var(--text);line-height:1.3}
+  .sidebar-logo p{font-size:12px;color:var(--muted);margin-top:4px}
+  .sidebar-section-label{font-family:var(--font-head);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);padding:20px 24px 8px}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:10px 24px;cursor:pointer;transition:all var(--transition);color:var(--muted);font-size:14px;font-weight:400;border-left:2px solid transparent;text-decoration:none}
+  .nav-item:hover{color:var(--text);background:rgba(255,255,255,.04);border-left-color:var(--dim)}
+  .nav-item.active{color:var(--text);background:var(--accent-glow);border-left-color:var(--accent);font-weight:500}
+  .nav-item .nav-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;background:var(--surface2);flex-shrink:0;transition:background var(--transition)}
+  .nav-item.active .nav-icon{background:var(--accent-glow)}
+  .nav-item .nav-label{flex:1}
+  .sidebar-footer{margin-top:auto;padding:16px 24px;border-top:1px solid var(--border);font-size:12px;color:var(--dim)}
+  .sidebar-footer span{color:var(--accent)}
+  .main{margin-left:var(--sidebar-w);min-height:100vh;transition:margin var(--transition)}
+  .topbar{position:sticky;top:0;height:60px;background:rgba(11,13,17,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 36px;z-index:50}
+  .topbar-title{font-family:var(--font-head);font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.05em}
+  .topbar-title span{color:var(--text)}
+  .hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:8px;background:none;border:none}
+  .hamburger span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;transition:all var(--transition)}
+  .page{display:none;padding:44px 48px 80px;max-width:1140px;width:100%;animation:fadeUp .4s ease forwards}
+  .page.active{display:block}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  .page-header{margin-bottom:40px}
+  .page-eyebrow{font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+  h1.page-title{font-family:var(--font-head);font-size:clamp(28px,4vw,40px);font-weight:800;line-height:1.15;color:var(--text);margin-bottom:12px}
+  .page-subtitle{color:var(--muted);font-size:16px;max-width:580px}
+  h2{font-family:var(--font-head);font-size:20px;font-weight:700;color:var(--text);margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+  h3{font-family:var(--font-head);font-size:15px;font-weight:600;color:var(--text);margin:28px 0 12px}
+  p{color:var(--muted);margin-bottom:14px}
+  strong{color:var(--text);font-weight:600}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin:24px 0}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;cursor:pointer;transition:all var(--transition);position:relative;overflow:hidden}
+  .card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--accent-glow) 0%,transparent 60%);opacity:0;transition:opacity var(--transition)}
+  .card:hover{border-color:rgba(232,144,58,.4);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.4)}
+  .card:hover::before{opacity:1}
+  .card-icon{font-size:28px;margin-bottom:12px}
+  .card-title{font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px}
+  .card-desc{font-size:12px;color:var(--muted);line-height:1.5}
+  .card-arrow{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--dim);font-size:18px;transition:all var(--transition)}
+  .card:hover .card-arrow{color:var(--accent);transform:translateY(-50%) translateX(3px)}
+  .table-wrap{overflow-x:auto;margin:20px 0;border-radius:var(--r);border:1px solid var(--border)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  thead tr{background:var(--surface2)}
+  thead th{padding:12px 16px;text-align:left;font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap;border-bottom:1px solid var(--border)}
+  tbody tr{border-bottom:1px solid rgba(36,40,56,.6);transition:background var(--transition)}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr:hover{background:rgba(255,255,255,.025)}
+  tbody td{padding:12px 16px;color:var(--muted);vertical-align:top}
+  tbody td:first-child{color:var(--text);font-weight:500}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;font-family:var(--font-head)}
+  .badge-green{background:rgba(74,222,128,.12);color:var(--green);border:1px solid rgba(74,222,128,.2)}
+  .badge-red{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.2)}
+  .badge-yellow{background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.2)}
+  .badge-blue{background:rgba(96,165,250,.12);color:var(--blue);border:1px solid rgba(96,165,250,.2)}
+  .badge-orange{background:var(--accent-glow);color:var(--accent);border:1px solid rgba(232,144,58,.3)}
+  .callout{border-radius:var(--r);padding:16px 20px;margin:20px 0;display:flex;gap:14px;border-left:3px solid;font-size:14px}
+  .callout-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+  .callout-body{flex:1}
+  .callout-body strong{display:block;margin-bottom:4px;font-size:14px}
+  .callout-body p{margin:0;font-size:13.5px}
+  .callout.warn{background:rgba(251,191,36,.07);border-color:var(--yellow)}
+  .callout.warn .callout-icon,.callout.warn strong{color:var(--yellow)}
+  .callout.info{background:rgba(96,165,250,.07);border-color:var(--blue)}
+  .callout.info .callout-icon,.callout.info strong{color:var(--blue)}
+  .callout.success{background:rgba(74,222,128,.07);border-color:var(--green)}
+  .callout.success .callout-icon,.callout.success strong{color:var(--green)}
+  .callout.danger{background:rgba(248,113,113,.07);border-color:var(--red)}
+  .callout.danger .callout-icon,.callout.danger strong{color:var(--red)}
+  .callout.accent{background:var(--accent-glow);border-color:var(--accent)}
+  .callout.accent .callout-icon,.callout.accent strong{color:var(--accent)}
+  .checklist{list-style:none;margin:16px 0}
+  .checklist li{display:flex;align-items:flex-start;gap:12px;padding:10px 16px;border-radius:8px;transition:background var(--transition);margin-bottom:4px;cursor:default;font-size:14px;color:var(--muted)}
+  .checklist li:hover{background:rgba(255,255,255,.03)}
+  .checklist li .step-num{width:24px;height:24px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:11px;font-weight:700;color:var(--accent);flex-shrink:0;margin-top:2px}
+  .checklist li .step-content strong{display:block;color:var(--text);font-size:14px}
+  .checklist li .step-content span{font-size:12px;color:var(--dim)}
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin:24px 0}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 18px;text-align:center}
+  .stat-card .stat-val{font-family:var(--font-head);font-size:26px;font-weight:800;color:var(--text);margin-bottom:4px}
+  .stat-card .stat-label{font-size:12px;color:var(--muted)}
+  .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin:24px 0}
+  .team-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px}
+  .team-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:800;font-size:16px;color:white;margin-bottom:12px}
+  .team-name{font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px}
+  .team-role{font-size:12px;color:var(--accent);margin-bottom:8px}
+  .team-desc{font-size:12px;color:var(--muted);line-height:1.5}
+  .escalation-item{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);margin-bottom:10px;transition:border-color var(--transition)}
+  .escalation-item:hover{border-color:rgba(232,144,58,.3)}
+  .escalation-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px}
+  .dot-red{background:var(--red);box-shadow:0 0 8px var(--red)}
+  .dot-yellow{background:var(--yellow);box-shadow:0 0 8px var(--yellow)}
+  .dot-green{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .escalation-text strong{color:var(--text);font-size:14px}
+  .escalation-text p{font-size:12px;color:var(--dim);margin:3px 0 0}
+  .prompt-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;font-size:13px;line-height:1.7;color:var(--muted);font-style:italic;margin:16px 0;position:relative}
+  .prompt-box::before{content:'Prompt';position:absolute;top:-10px;left:14px;background:var(--surface);padding:0 8px;font-family:var(--font-head);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);border:1px solid var(--border);border-radius:4px}
+  .hero{background:linear-gradient(135deg,var(--surface) 0%,rgba(19,22,30,.6) 100%);border:1px solid var(--border);border-radius:var(--r-lg);padding:36px;margin-bottom:36px;position:relative;overflow:hidden}
+  .hero::before{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(232,144,58,.15) 0%,transparent 70%);pointer-events:none}
+  .hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--accent-glow);border:1px solid rgba(232,144,58,.3);border-radius:20px;padding:5px 14px;font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+  .hero h1{font-family:var(--font-head);font-size:clamp(24px,3.5vw,36px);font-weight:800;line-height:1.2;color:var(--text);margin-bottom:12px}
+  .hero p{font-size:15px;color:var(--muted);max-width:520px;margin-bottom:24px}
+  .hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:var(--r);font-family:var(--font-head);font-size:13px;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:all var(--transition);border:1px solid;text-decoration:none}
+  .btn-primary{background:var(--accent);color:white;border-color:var(--accent)}
+  .btn-primary:hover{background:var(--accent2);border-color:var(--accent2);box-shadow:0 4px 20px rgba(232,144,58,.4)}
+  .btn-ghost{background:transparent;color:var(--muted);border-color:var(--border)}
+  .btn-ghost:hover{color:var(--text);border-color:var(--dim);background:rgba(255,255,255,.04)}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:90}
+  @media(max-width:768px){
+    .sidebar{transform:translateX(-100%)}
+    .sidebar.open{transform:translateX(0)}
+    .main{margin-left:0}
+    .page{padding:24px 16px 60px}
+    .topbar{padding:0 16px}
+    .hamburger{display:flex}
+    .overlay.visible{display:block}
+    .card-grid{grid-template-columns:1fr 1fr}
+    .team-grid{grid-template-columns:1fr}
+    .hero{padding:24px 20px}
+    .hero h1{font-size:24px}
+    .hero-actions{flex-direction:column;gap:8px}
+    .btn{width:100%;justify-content:center}
+    .stat-row{grid-template-columns:1fr 1fr}
+    h1.page-title{font-size:26px}
+    .table-wrap{-webkit-overflow-scrolling:touch}
+    table{min-width:460px}
+    .badge{font-size:10px;padding:2px 7px;white-space:nowrap}
+    .checklist li{padding:10px}
+    .callout{padding:14px;gap:10px}
+    h2{font-size:17px}
+    .topbar-title{font-size:12px}
+    .escalation-item{padding:12px}
+    .stat-card .stat-val{font-size:22px}
+    .team-card{padding:16px}
+  }
+  @media(max-width:480px){.card-grid{grid-template-columns:1fr}.page{padding:20px 14px 60px}}
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+  ::-webkit-scrollbar-thumb:hover{background:var(--dim)}
+</style>
+</head>
+<body>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">🌐 Zimran</div>
+    <h1>Reputation<br/>Playbook</h1>
+    <p>New Joiner Guide 2.0</p>
+  </div>
+  <div class="sidebar-section-label">Navigation</div>
+  <a class="nav-item active" data-page="home" onclick="navigate('home',this)"><span class="nav-icon">🏠</span><span class="nav-label">Overview</span></a>
+  <a class="nav-item" data-page="daily" onclick="navigate('daily',this)"><span class="nav-icon">📅</span><span class="nav-label">Daily Operations</span></a>
+  <a class="nav-item" data-page="reviews" onclick="navigate('reviews',this)"><span class="nav-icon">⭐</span><span class="nav-label">Reviews Stream</span></a>
+  <a class="nav-item" data-page="sentiment" onclick="navigate('sentiment',this)"><span class="nav-icon">📡</span><span class="nav-label">Mentions & Sentiment</span></a>
+  <a class="nav-item" data-page="community" onclick="navigate('community',this)"><span class="nav-icon">💬</span><span class="nav-label">Community & DMs</span></a>
+  <a class="nav-item" data-page="reddit" onclick="navigate('reddit',this)"><span class="nav-icon">🔴</span><span class="nav-label">Reddit Management</span></a>
+  <a class="nav-item" data-page="tools" onclick="navigate('tools',this)"><span class="nav-icon">🔧</span><span class="nav-label">Tools & Contracts</span></a>
+  <div class="sidebar-footer">Version 2.0 &nbsp;·&nbsp; <span>Zimran</span></div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <button class="hamburger" onclick="openSidebar()"><span></span><span></span><span></span></button>
+    <div class="topbar-title" id="topbar-title">Reputation Playbook &nbsp;/&nbsp; <span>Overview</span></div>
+    <div></div>
+  </div>
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <div class="hero">
+      <div class="hero-badge">👋 Welcome</div>
+      <h1>Reputation Playbook</h1>
+      <p>This guide covers everything you need to protect and grow our product reputation across every public digital channel. Start here, explore everything.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" onclick="navigate('daily',document.querySelector('[data-page=daily]'))">Start: Daily Operations →</button>
+        <button class="btn btn-ghost" onclick="navigate('tools',document.querySelector('[data-page=tools]'))">Tools & Contracts</button>
+      </div>
+    </div>
+    <div class="callout accent"><span class="callout-icon">🎯</span><div class="callout-body"><strong>Our Core Mission</strong><p>Maintain high user trust and strong product ratings while ensuring feedback and complaints are quickly identified, addressed, and routed to the right internal teams. <strong>Nothing goes unanswered.</strong></p></div></div>
+    <h2>Navigate the Playbook</h2>
+    <div class="card-grid">
+      <div class="card" onclick="navigate('daily',document.querySelector('[data-page=daily]'))"><div class="card-icon">📅</div><div class="card-title">Daily Operations</div><div class="card-desc">Your step-by-step morning checklist and weekly tracking</div><span class="card-arrow">→</span></div>
+      <div class="card" onclick="navigate('reviews',document.querySelector('[data-page=reviews]'))"><div class="card-icon">⭐</div><div class="card-title">Reviews Stream</div><div class="card-desc">Platforms, rating targets, responding to reviews, BBB</div><span class="card-arrow">→</span></div>
+      <div class="card" onclick="navigate('sentiment',document.querySelector('[data-page=sentiment]'))"><div class="card-icon">📡</div><div class="card-title">Mentions & Sentiment</div><div class="card-desc">YouScan setup, health checks, tagging negative mentions</div><span class="card-arrow">→</span></div>
+      <div class="card" onclick="navigate('community',document.querySelector('[data-page=community]'))"><div class="card-icon">💬</div><div class="card-title">Community & DMs</div><div class="card-desc">ManyChat, Napoleon Cat, social media response guide</div><span class="card-arrow">→</span></div>
+      <div class="card" onclick="navigate('reddit',document.querySelector('[data-page=reddit]'))"><div class="card-icon">🔴</div><div class="card-title">Reddit Management</div><div class="card-desc">Strategy, engagement formula, what to do and avoid</div><span class="card-arrow">→</span></div>
+      <div class="card" onclick="navigate('tools',document.querySelector('[data-page=tools]'))"><div class="card-icon">🔧</div><div class="card-title">Tools & Contracts</div><div class="card-desc">Every tool we use, billing dates, and login guide</div><span class="card-arrow">→</span></div>
+    </div>
+    <h2>Team at a Glance</h2>
+    <div class="team-grid">
+      <div class="team-card" style="border-color:rgba(248,113,113,.25);background:rgba(248,113,113,.04)">
+        <div class="team-avatar" style="background:linear-gradient(135deg,#64748b,#475569)">YP</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px"><div class="team-name" style="margin-bottom:0">Yekaterina P.</div><span class="badge badge-red" style="font-size:10px;padding:2px 7px">Leaving</span></div>
+        <div class="team-role" style="color:var(--muted)">Reputation Stream Manager</div>
+        <div class="team-desc" style="margin-top:8px">Strategy, Reddit, weekly reporting, hiring, cross-stream coordination. <strong style="color:var(--red)">Currently transitioning out — incoming manager should be onboarded urgently.</strong></div>
+      </div>
+      <div class="team-card"><div class="team-avatar">AM</div><div class="team-name">Aliya Muratova</div><div class="team-role">Community Agent</div><div class="team-desc">DMs, ad comments, social monitoring, automations (ManyChat)</div></div>
+      <div class="team-card"><div class="team-avatar">MA</div><div class="team-name">Maira Albakassova</div><div class="team-role">Reviews Agent (Part-time)</div><div class="team-desc">Review platforms, BBB complaints, invitation campaigns</div></div>
+    </div>
+    <div class="callout danger"><span class="callout-icon">🚨</span><div class="callout-body"><strong>Manager Transition in Progress</strong><p>Yekaterina P. is leaving the company. The incoming manager should be onboarded as soon as possible. Key priorities: get access to all tools, meet Aliya and Maira, attend the Friday Organic Sprint call, and review the open hire roles below.</p></div></div>
+    <h2>Products We Cover</h2>
+    <div class="table-wrap"><table><thead><tr><th>Product</th><th>Reviews</th><th>Monitoring</th><th>DMs</th><th>Reddit</th><th>Automations</th></tr></thead><tbody>
+      <tr><td>Coursiv</td><td><span class="badge badge-green">✓ Active</span></td><td><span class="badge badge-green">✓ Active</span></td><td><span class="badge badge-green">✓ Active</span></td><td><span class="badge badge-green">✓ Active</span></td><td><span class="badge badge-green">✓ Active</span></td></tr>
+      <tr><td>Finelo</td><td><span class="badge badge-green">✓ Active</span></td><td><span class="badge badge-green">✓ Active</span></td><td><span class="badge badge-green">✓ Active</span></td><td><span class="badge badge-green">✓ Active</span></td><td><span class="badge badge-green">✓ Active</span></td></tr>
+      <tr><td>Subpilot</td><td><span class="badge badge-green">✓ Active</span></td><td><span class="badge badge-green">✓ Active</span></td><td><span class="badge badge-yellow">Planned</span></td><td><span class="badge badge-yellow">Planned</span></td><td><span class="badge badge-yellow">Planned</span></td></tr>
+      <tr><td>Coursiv Junior</td><td><span class="badge badge-green">✓ Active</span></td><td><span class="badge badge-green">✓ Active</span></td><td><span class="badge badge-green">✓ Active</span></td><td><span class="badge badge-green">✓ Active</span></td><td><span class="badge badge-green">✓ Active</span></td></tr>
+    </tbody></table></div>
+    <div class="callout warn"><span class="callout-icon">🚨</span><div class="callout-body"><strong>Open Hires — Priority for Incoming Manager</strong><p>Two roles are open: <strong>Community Agent</strong> (for Finelo/Subpilot) and <strong>Advocacy/UGC Manager</strong> (for Coursiv, Reddit, Facebook). Fill these as soon as possible.</p></div></div>
+  </div>
+
+  <!-- DAILY -->
+  <div class="page" id="page-daily">
+    <div class="page-header"><div class="page-eyebrow">Substream 01</div><h1 class="page-title">Daily Operations</h1><p class="page-subtitle">Work through this checklist every working morning. Don't skip steps — each one protects us from something going unseen.</p></div>
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-val">9</div><div class="stat-label">Daily tasks</div></div>
+      <div class="stat-card"><div class="stat-val">45–60<span style="font-size:16px">min</span></div><div class="stat-label">Morning check time</div></div>
+      <div class="stat-card"><div class="stat-val">100%</div><div class="stat-label">Reply rate target</div></div>
+      <div class="stat-card"><div class="stat-val">&lt;24h</div><div class="stat-label">First response time</div></div>
+    </div>
+    <h2>Morning Checklist</h2>
+    <ul class="checklist">
+      <li><div class="step-num">1</div><div class="step-content"><strong>Check YouScan for new mentions</strong><span>Community Agent · YouScan — Flag urgent mentions, tag all negatives as Refund or Other</span></div></li>
+      <li><div class="step-num">2</div><div class="step-content"><strong>Check AppFollow for new reviews</strong><span>Maira · AppFollow — Verify the bot handled responses; flag any spikes</span></div></li>
+      <li><div class="step-num">3</div><div class="step-content"><strong>Check DMs and ad comments</strong><span>Aliya · ManyChat / Napoleon Cat — Instagram, Facebook, YouTube, LinkedIn</span></div></li>
+      <li><div class="step-num">4</div><div class="step-content"><strong>Check Reddit</strong><span>Community Agent + Manager · Reddit + YouScan alerts — Respond where needed</span></div></li>
+      <li><div class="step-num">5</div><div class="step-content"><strong>Verify AppFollow integrations are working</strong><span>Manager + Maira · AppStore Connect, Google Console, Trustpilot — Confirm replies are posting</span></div></li>
+      <li><div class="step-num">6</div><div class="step-content"><strong>Check ManyChat bot health</strong><span>Aliya · ManyChat — Confirm active flows have no errors; check ad-to-DM sequences</span></div></li>
+      <li><div class="step-num">7</div><div class="step-content"><strong>Check for spikes in negative reviews</strong><span>Manager · AppFollow — Sudden spike usually means a new app bug → investigate immediately</span></div></li>
+      <li><div class="step-num">8</div><div class="step-content"><strong>Check BBB complaints and reviews</strong><span>Maira · BBB directly — Coursiv + Finelo + Prosperi. All complaints must be refunded.</span></div></li>
+    </ul>
+    <h2>When to Escalate</h2>
+    <div class="escalation-item"><div class="escalation-dot dot-red"></div><div class="escalation-text"><strong>Negative % spikes vs last sprint</strong><p>Escalate at Friday Organic Sprint call</p></div></div>
+    <div class="escalation-item"><div class="escalation-dot dot-red"></div><div class="escalation-text"><strong>Single complaint category exceeds 40% (e.g. Unauthorized charges)</strong><p>Escalate at Friday Organic Sprint call</p></div></div>
+    <div class="escalation-item"><div class="escalation-dot dot-red"></div><div class="escalation-text"><strong>Negative trend for 2+ sprints in a row</strong><p>Escalate immediately — don't wait for Friday</p></div></div>
+    <div class="escalation-item"><div class="escalation-dot dot-yellow"></div><div class="escalation-text"><strong>YouScan channel showing yellow (not syncing)</strong><p>Fix immediately — no data = wrong reports</p></div></div>
+    <div class="escalation-item"><div class="escalation-dot dot-yellow"></div><div class="escalation-text"><strong>AppFollow integration broken</strong><p>Fix immediately — auto-replies may have stopped</p></div></div>
+    <h2>Weekly Tracking (Every Friday)</h2>
+    <p>Fill the <strong>Community Table 3.0</strong> (Google Sheets) every Friday before the Organic Sprint call. Sprint runs Friday → Thursday (both days included).</p>
+    <div class="table-wrap"><table><thead><tr><th>Sheet</th><th>Filled By</th><th>Data Source</th></tr></thead><tbody>
+      <tr><td>Sentiment Dynamics</td><td>Manager</td><td>YouScan Dashboard tab</td></tr>
+      <tr><td>Reviews</td><td>Maira</td><td>AppFollow</td></tr>
+      <tr><td>Community</td><td>Aliya</td><td>Napoleon Cat</td></tr>
+      <tr><td>DM Funnel</td><td>Aliya</td><td>ManyChat</td></tr>
+    </tbody></table></div>
+    <div class="callout info"><span class="callout-icon">💡</span><div class="callout-body"><strong>Sentiment data tip</strong><p>Set date range to current sprint (Fri–Thu). Fill in Positive %, Negative %, Neutral % and the breakdown of negativity reasons for each product separately.</p></div></div>
+  </div>
+
+  <!-- REVIEWS -->
+  <div class="page" id="page-reviews">
+    <div class="page-header"><div class="page-eyebrow">Substream 02</div><h1 class="page-title">Reviews Stream</h1><p class="page-subtitle">Owned by <strong>Maira Albakassova</strong>. This stream covers all review platforms, ratings management, responding to reviews, and BBB complaints.</p></div>
+    <div class="callout accent"><span class="callout-icon">👤</span><div class="callout-body"><strong>Owner: Maira Albakassova</strong><p>All operational questions about reviews go directly to Maira. She owns every part of this process.</p></div></div>
+    <h2>Platforms We Manage</h2>
+    <div class="table-wrap"><table><thead><tr><th>Platform</th><th>Managed By</th><th>Key Notes</th></tr></thead><tbody>
+      <tr><td>Apple App Store</td><td>Maira (via AppFollow)</td><td>Reply to all reviews. Replies take 24–48h to appear (App Store moderation).</td></tr>
+      <tr><td>Google Play</td><td>Maira (via AppFollow)</td><td>Reply to all reviews.</td></tr>
+      <tr><td>Trustpilot</td><td>Maira (via AppFollow)</td><td>Use Trustpilot's own displayed rating — AppFollow number may differ.</td></tr>
+      <tr><td>SmartCustomer</td><td>Maira (directly)</td><td>Separate contracts for Coursiv and Finelo, paid separately.</td></tr>
+      <tr><td>Reviews.io</td><td>Maira (directly)</td><td>Monitor + run invitation campaigns monthly.</td></tr>
+      <tr><td>HelloPeter</td><td>Maira (directly)</td><td>South Africa-focused. Lower volume.</td></tr>
+      <tr><td>BBB</td><td>Maira (directly)</td><td><span class="badge badge-red">⚠ Legal weight</span> All complaints must be refunded.</td></tr>
+    </tbody></table></div>
+    <h2>Rating Targets</h2>
+    <div class="table-wrap"><table><thead><tr><th>Platform</th><th>Target (Blended)</th><th>Alert Level</th></tr></thead><tbody>
+      <tr><td>App Store, Google Play, Trustpilot, Reviews.io, Sitejabber, HelloPeter</td><td>≥ 4.4 (Coursiv) &nbsp; ≥ 4.5 (Finelo)</td><td><span class="badge badge-red">Drop to 4.3 = concerning</span></td></tr>
+      <tr><td>BBB</td><td>~4.0</td><td>If much higher → stop invites (suspicious)</td></tr>
+      <tr><td>App Store + Google Play (text reviews only)</td><td>≥ 4.2</td><td><span class="badge badge-red">Low text ratings = app removal risk</span></td></tr>
+    </tbody></table></div>
+    <div class="callout warn"><span class="callout-icon">🔍</span><div class="callout-body"><strong>Text reviews (last week) = your most important early warning signal</strong><p>A sudden drop in weekly text reviews means something broke in the app. Check immediately what users are complaining about.</p></div></div>
+    <h2>Responding to Reviews</h2>
+    <h3>Automated replies via AppFollow</h3>
+    <p>AppFollow's AI bot handles most replies automatically. Your responsibilities:</p>
+    <ul class="checklist">
+      <li><div class="step-num">→</div><div class="step-content"><strong>Update bot instructions every month</strong><span>Rotating the language prevents it looking robotic, which can get flagged by platform moderators</span></div></li>
+      <li><div class="step-num">→</div><div class="step-content"><strong>Check for missed or incorrect replies daily</strong><span>The bot isn't perfect — always verify</span></div></li>
+      <li><div class="step-num">→</div><div class="step-content"><strong>Maintain 100% reply rate</strong><span>Below 99% is considered bad</span></div></li>
+    </ul>
+    <h3>Handling negative reviews (1–3 stars)</h3>
+    <ul class="checklist">
+      <li><div class="step-num">1</div><div class="step-content"><strong>Address the specific issue</strong><span>Never use a generic template</span></div></li>
+      <li><div class="step-num">2</div><div class="step-content"><strong>Explain the subscription model if billing-related</strong><span>Clarify charges were disclosed at registration</span></div></li>
+      <li><div class="step-num">3</div><div class="step-content"><strong>Be warm and empathetic, never defensive</strong><span>Even if the complaint seems unfair</span></div></li>
+      <li><div class="step-num">4</div><div class="step-content"><strong>Direct to the correct support email</strong><span>Use the table below — the right address matters</span></div></li>
+    </ul>
+    <h3>Support email routing</h3>
+    <div class="table-wrap"><table><thead><tr><th>Product</th><th>Platform</th><th>Support Email</th></tr></thead><tbody>
+      <tr><td>Coursiv</td><td>App Store, Google Play, Trustpilot</td><td>support@coursiv.io</td></tr>
+      <tr><td>Finelo</td><td>App Store</td><td>wecare@finelo.com</td></tr>
+      <tr><td>Finelo</td><td>Google Play</td><td>careteam@finelo.com</td></tr>
+      <tr><td>Finelo</td><td>Trustpilot</td><td>support@finelo.com</td></tr>
+    </tbody></table></div>
+    <div class="callout info"><span class="callout-icon">📌</span><div class="callout-body"><strong>Why Finelo has different emails per platform</strong><p>It helps the support team identify where the user came from and route tickets correctly. After the issue is resolved, we ask users to update their review — and track the effect on ratings.</p></div></div>
+    <h2>Invitation Campaigns</h2>
+    <h3>Step 1 — Build the user list</h3>
+    <ul class="checklist">
+      <li><div class="step-num">1</div><div class="step-content"><strong>Open Amplitude → lesson ratings chart</strong><span>Filter for 5-star / "excellent" / "amazing" ratings, today and yesterday</span></div></li>
+      <li><div class="step-num">2</div><div class="step-content"><strong>Download the CSV</strong><span>Name files by product code: c1 = Coursiv, f1 = Finelo, etc.</span></div></li>
+      <li><div class="step-num">3</div><div class="step-content"><strong>Send to Baurzhan Balgaziyev</strong><span>He returns the file with user emails added</span></div></li>
+      <li><div class="step-num">4</div><div class="step-content"><strong>Clean the list</strong><span>BBB: keep US + Canada only, remove trial users (keep $19.99–$39.99) · Reviews.io: remove trial users only</span></div></li>
+    </ul>
+    <h3>Step 2 — Send invitations</h3>
+    <div class="table-wrap"><table><thead><tr><th>Platform</th><th>Products</th><th>How to Send</th></tr></thead><tbody>
+      <tr><td>Reviews.io</td><td>All products</td><td>Format as Reviews.io requires → upload via bulk collection → invites sent automatically</td></tr>
+      <tr><td>BBB</td><td>Finelo (manual), Coursiv (automated via widget)</td><td>Format list → filter US/CA → send via Iterable (templates already set up)</td></tr>
+    </tbody></table></div>
+    <h2>BBB Complaints — Special Rules</h2>
+    <div class="callout danger"><span class="callout-icon">⚠️</span><div class="callout-body"><strong>BBB has legal oversight — treat every complaint seriously</strong><p>BBB managers manually review all cases. Always issue the refund. Always confirm refund + cancellation in your reply. Never argue. Show we are honest and transparent.</p></div></div>
+    <h3>ChatGPT prompt for BBB replies</h3>
+    <div class="prompt-box">You are responding on behalf of a customer support team for an online learning platform. A user has left feedback (positive, negative, or neutral). Write a professional and empathetic reply in the same language as the original message. If positive, express appreciation. If negative, apologize sincerely, offer to help, and invite the user to contact support@coursiv.io. Sign off: "Best regards, Coursiv Customer Support Team."<br><br>Content complaints → say feedback has been passed to the product team.<br>Unauthorized charge → explain the platform operates on a subscription basis, disclosed at registration.<br>Upsell charge → explain the charge was for optional additional content, with fee explained before purchase.</div>
+  </div>
+
+  <!-- SENTIMENT -->
+  <div class="page" id="page-sentiment">
+    <div class="page-header"><div class="page-eyebrow">Substream 03</div><h1 class="page-title">Mentions & Sentiment</h1><p class="page-subtitle">YouScan is our social listening backbone. Bad data here means wrong decisions everywhere — keeping it healthy is a core responsibility.</p></div>
+    <div class="callout danger"><span class="callout-icon">🔴</span><div class="callout-body"><strong>Bad YouScan setup = bad data = wrong conclusions</strong><p>If a channel isn't connected or has stopped syncing, that product's mentions won't appear in dashboards. Always verify before reporting.</p></div></div>
+    <h2>How YouScan Works</h2>
+    <div class="table-wrap"><table><thead><tr><th>Method</th><th>How It Works</th></tr></thead><tbody>
+      <tr><td>Keyword tracking</td><td>Scans the web for brand/product names and pulls any public mention it finds automatically</td></tr>
+      <tr><td>Channel connection</td><td>You manually link owned pages, accounts, and stores — YouScan collects everything from them even without a name mention</td></tr>
+    </tbody></table></div>
+    <h2>What Must Be Connected (Per Product)</h2>
+    <div class="callout success"><span class="callout-icon">✅</span><div class="callout-body"><strong>Connect all of the following for every product</strong><p>App Store listing · Google Play listing · Trustpilot · Sitejabber · BBB · Reviews.io · HelloPeter · All Facebook ad accounts · Facebook brand pages · Instagram accounts · YouTube channel · Reddit (subreddits + brand mentions)</p></div></div>
+    <div class="callout warn"><span class="callout-icon">⚠️</span><div class="callout-body"><strong>When a new ad account, page, or platform is created for any product</strong><p>Connect it to YouScan immediately. Waiting even a few days means missing mentions.</p></div></div>
+    <h2>Weekly Health Check (Every Monday)</h2>
+    <p>Channels can silently stop syncing. Run this at the start of every week.</p>
+    <ul class="checklist">
+      <li><div class="step-num">1</div><div class="step-content"><strong>Open YouScan</strong><span></span></div></li>
+      <li><div class="step-num">2</div><div class="step-content"><strong>Go to Topics → select the product</strong><span></span></div></li>
+      <li><div class="step-num">3</div><div class="step-content"><strong>Go to Settings → Channels</strong><span></span></div></li>
+      <li><div class="step-num">4</div><div class="step-content"><strong>Check the circular arrow icon next to each channel</strong><span>Grey = working normally · Yellow = data stopped, fix immediately</span></div></li>
+    </ul>
+    <div class="callout danger"><span class="callout-icon">🚨</span><div class="callout-body"><strong>If any channel shows yellow</strong><p>Check all connections and expired authorizations → Contact YouScan via in-app support chat (they respond quickly) → Do NOT fill in sentiment data for that product until fixed.</p></div></div>
+    <h2>Tagging Negative Mentions</h2>
+    <div class="callout warn"><span class="callout-icon">🏷️</span><div class="callout-body"><strong>The one rule that must always be followed</strong><p>Every negative mention must be tagged as either <strong>Refund</strong> or <strong>Other</strong>. No exceptions. This is what makes the Refund proportion in the dashboard accurate. Kaisar from payments regularly uses this data — bad tagging misleads product and finance decisions.</p></div></div>
+    <div class="table-wrap"><table><thead><tr><th>Tagging Method</th><th>When to Use</th></tr></thead><tbody>
+      <tr><td>Keyword-based rules</td><td>Set up once — auto-tags mentions containing defined keywords. Best for high-volume recurring complaints.</td></tr>
+      <tr><td>Manual tagging</td><td>For mentions that don't match any rule, or to correct a wrong auto-tag.</td></tr>
+    </tbody></table></div>
+    <div class="callout info"><span class="callout-icon">💡</span><div class="callout-body"><strong>One mention can have more than one tag</strong><p>A complaint about both a refund and a bug gets both the <em>Refund</em> and <em>Bug</em> tags. The dashboard total count will appear higher than reality — that's expected. The proportions are still correct.</p></div></div>
+    <h2>Dashboards to Build</h2>
+    <div class="table-wrap"><table><thead><tr><th>Dashboard</th><th>Purpose</th><th>Important Note</th></tr></thead><tbody>
+      <tr><td>Refund Proportion (Refund vs Other)</td><td>Shows the split — used for weekly/monthly reports</td><td>Requires 100% tagging of all negative mentions</td></tr>
+      <tr><td>All Negativity Reasons</td><td>Shows breakdown of all complaint categories and proportions</td><td>Total count inflated when multi-tagged — proportions still accurate</td></tr>
+    </tbody></table></div>
+    <h2>Filling the Weekly Sentiment Report</h2>
+    <ul class="checklist">
+      <li><div class="step-num">1</div><div class="step-content"><strong>Open YouScan → Dashboard tab</strong><span>Every Friday before the Organic Sprint call</span></div></li>
+      <li><div class="step-num">2</div><div class="step-content"><strong>Set date range to current sprint (Fri–Thu)</strong><span></span></div></li>
+      <li><div class="step-num">3</div><div class="step-content"><strong>Fill in Positive %, Negative %, Neutral % per product</strong><span></span></div></li>
+      <li><div class="step-num">4</div><div class="step-content"><strong>Fill in the breakdown of negativity reasons</strong><span>Escalate if negative % spikes, any category > 40%, or negative trend 2+ sprints</span></div></li>
+    </ul>
+    <h2>Resources</h2>
+    <div class="table-wrap"><table><thead><tr><th>Resource</th><th>Details</th></tr></thead><tbody>
+      <tr><td>Knowledge base</td><td>https://help.youscan.io/en</td></tr>
+      <tr><td>In-app support</td><td>Use the chat inside YouScan — fast response, can help with setup and technical issues</td></tr>
+      <tr><td>Account Manager</td><td>Anastasiia Zhurakovska — anastasiia.zhurakovska@youscan.io</td></tr>
+    </tbody></table></div>
+  </div>
+
+  <!-- COMMUNITY -->
+  <div class="page" id="page-community">
+    <div class="page-header"><div class="page-eyebrow">Substream 04</div><h1 class="page-title">Community & DMs</h1><p class="page-subtitle">Owned by <strong>Aliya Muratova</strong>. This stream covers everything that happens in DMs and comment sections across our social platforms.</p></div>
+    <div class="callout accent"><span class="callout-icon">💬</span><div class="callout-body"><strong>Core rule: Nothing goes unanswered</strong><p>Every DM and comment that reaches us must receive a response. The bot handles the first layer — but Aliya catches everything the bot misses.</p></div></div>
+    <h2>Platforms Aliya Manages</h2>
+    <div class="table-wrap"><table><thead><tr><th>Platform</th><th>Type of Work</th><th>Tools Used</th></tr></thead><tbody>
+      <tr><td>Instagram</td><td>DMs + ad comment responses</td><td>ManyChat + Napoleon Cat</td></tr>
+      <tr><td>Facebook</td><td>DMs + ad comment responses</td><td>ManyChat + Napoleon Cat</td></tr>
+      <tr><td>YouTube</td><td>Comment monitoring</td><td>Native YouTube</td></tr>
+      <tr><td>LinkedIn</td><td>Brand mentions, certificate replies, post sharing</td><td>Native LinkedIn (Finelo, Coursiv, Arnegen, Edulagoon accounts)</td></tr>
+      <tr><td>TikTok</td><td>Comment monitoring (planned)</td><td>TBD — needs dedicated community agent</td></tr>
+    </tbody></table></div>
+    <h2>How ManyChat Automation Works</h2>
+    <p>ManyChat handles the <strong>first layer</strong> of DM responses automatically. You don't reply to everything manually.</p>
+    <div class="table-wrap"><table><thead><tr><th>What ManyChat Does</th><th>Your Daily Job</th></tr></thead><tbody>
+      <tr><td>Sends automated replies to new DMs based on keyword triggers</td><td>Check for conversations the bot couldn't handle and reply manually</td></tr>
+      <tr><td>Replies to comments on ads automatically</td><td>Check for bot errors or broken flows</td></tr>
+      <tr><td>Runs ad-to-DM sequences when users engage with ads</td><td>Monitor sequence performance in weekly report</td></tr>
+    </tbody></table></div>
+    <h2>Napoleon Cat — What It Does</h2>
+    <p>Napoleon Cat is connected to Instagram and Facebook. It shows all incoming comments and DMs in a single unified inbox — so you don't have to switch between apps. It also tracks response metrics for weekly reporting.</p>
+    <h2>How to Write Good Responses</h2>
+    <h3>For general questions or complaints</h3>
+    <ul class="checklist">
+      <li><div class="step-num">1</div><div class="step-content"><strong>Acknowledge the user's feeling first</strong><span>"I completely understand your concern..."</span></div></li>
+      <li><div class="step-num">2</div><div class="step-content"><strong>Answer their question clearly and directly</strong><span></span></div></li>
+      <li><div class="step-num">3</div><div class="step-content"><strong>If billing-related → direct to correct support email</strong><span>See the Reviews page for which email to use per product</span></div></li>
+      <li><div class="step-num">4</div><div class="step-content"><strong>Keep tone warm, helpful, never defensive or robotic</strong><span></span></div></li>
+    </ul>
+    <h3>For angry or frustrated users</h3>
+    <ul class="checklist">
+      <li><div class="step-num">1</div><div class="step-content"><strong>Don't argue, don't match their energy</strong><span></span></div></li>
+      <li><div class="step-num">2</div><div class="step-content"><strong>Empathise first</strong><span>"I completely understand your frustration."</span></div></li>
+      <li><div class="step-num">3</div><div class="step-content"><strong>Offer a clear path forward</strong><span>"Please DM us or email [address] and we'll sort this out right away."</span></div></li>
+      <li><div class="step-num">4</div><div class="step-content"><strong>If user becomes abusive → flag to manager, stop engaging</strong><span></span></div></li>
+    </ul>
+    <h2>When to Escalate</h2>
+    <div class="escalation-item"><div class="escalation-dot dot-red"></div><div class="escalation-text"><strong>User threatens legal action, chargebacks, or mentions BBB</strong><p>Escalate to manager immediately</p></div></div>
+    <div class="escalation-item"><div class="escalation-dot dot-red"></div><div class="escalation-text"><strong>Sudden spike in DM volume (e.g. after a product incident)</strong><p>Escalate to manager immediately</p></div></div>
+    <div class="escalation-item"><div class="escalation-dot dot-yellow"></div><div class="escalation-text"><strong>ManyChat bot sending incorrect replies</strong><p>Escalate to manager + fix the flow</p></div></div>
+    <div class="escalation-item"><div class="escalation-dot dot-yellow"></div><div class="escalation-text"><strong>Repeated complaints about the same issue across multiple users</strong><p>Escalate to manager — could be a product bug</p></div></div>
+    <h2>Weekly Reporting</h2>
+    <div class="table-wrap"><table><thead><tr><th>Sheet</th><th>Source</th><th>What to Track</th></tr></thead><tbody>
+      <tr><td>Community</td><td>Napoleon Cat</td><td>Comment reply rate, volume, sentiment</td></tr>
+      <tr><td>DM Funnel</td><td>ManyChat</td><td>DM opens, replies, conversion metrics</td></tr>
+    </tbody></table></div>
+    <div class="callout info"><span class="callout-icon">📝</span><div class="callout-body"><strong>Reporting rules</strong><p>Enter <strong>0</strong> for zero activity. Use a dash ( – ) for metrics not yet tracked. Never leave cells blank.</p></div></div>
+  </div>
+
+  <!-- REDDIT -->
+  <div class="page" id="page-reddit">
+    <div class="page-header"><div class="page-eyebrow">Substream 05</div><h1 class="page-title">Reddit Management</h1><p class="page-subtitle">Reddit is one of our most complex and highest-impact reputation channels. This guide explains the strategy, what works, and exactly what to avoid.</p></div>
+    <div class="callout danger"><span class="callout-icon">🔴</span><div class="callout-body"><strong>Key insight: You cannot remove Reddit from Google</strong><p>Once a Reddit thread is indexed for your brand search, there's no way to delete it from Google results, suppress it with SEO alone, or contact Reddit/Google to remove it. The only effective strategy is to outcompete it — create positive content with more engagement so Google ranks that higher instead.</p></div></div>
+    <h2>Why Reddit Matters</h2>
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-val">700k+</div><div class="stat-label">Users/month who see our ads then search our brand</div></div>
+      <div class="stat-card"><div class="stat-val">40.1%</div><div class="stat-label">Of LLM citations come from Reddit (Semrush 2025)</div></div>
+      <div class="stat-card"><div class="stat-val">#1</div><div class="stat-label">Source cited by AI models</div></div>
+    </div>
+    <p>Negative Reddit threads directly reduce conversion rates. They've also affected our ability to work with media partners and raised concerns with banks and compliance teams.</p>
+    <h2>What We Do on Reddit</h2>
+    <div class="table-wrap"><table><thead><tr><th>Activity</th><th>Description</th></tr></thead><tbody>
+      <tr><td>Daily monitoring</td><td>Track mentions via YouScan Reddit alerts</td></tr>
+      <tr><td>Reactive engagement</td><td>Respond to complaints — empathetically, never defensively</td></tr>
+      <tr><td>Misinformation correction</td><td>Correct false claims factually, without arguing</td></tr>
+      <tr><td>Content publishing</td><td>Post in relevant subreddits following their rules</td></tr>
+      <tr><td>SEO support</td><td>Contribute to threads where users ask about tools like ours</td></tr>
+      <tr><td>Brand subreddit</td><td>Manage r/coursivofficial</td></tr>
+    </tbody></table></div>
+    <h2>When and How to Reply from the Official Account</h2>
+    <div class="callout warn"><span class="callout-icon">⚠️</span><div class="callout-body"><strong>Do not reply to every negative comment</strong><p>Some users have publicly complained that the brand "sneaks around in the comments section." Replying too often draws more attention and looks defensive or coordinated. Only reply when it genuinely reduces risk.</p></div></div>
+    <h3>Reply when:</h3>
+    <ul class="checklist">
+      <li><div class="step-num">→</div><div class="step-content"><strong>User is highly vocal and mentions authorities, BBB, police, or chargebacks</strong><span></span></div></li>
+      <li><div class="step-num">→</div><div class="step-content"><strong>Complaint is specific and factual — a public reply adds credibility</strong><span></span></div></li>
+    </ul>
+    <h3>How to reply:</h3>
+    <ul class="checklist">
+      <li><div class="step-num">1</div><div class="step-content"><strong>Write a calm, professional public reply acknowledging the issue</strong><span></span></div></li>
+      <li><div class="step-num">2</div><div class="step-content"><strong>Ask user to DM you their email to resolve privately</strong><span></span></div></li>
+      <li><div class="step-num">3</div><div class="step-content"><strong>Resolve in private — refund, cancel, explain the charge</strong><span></span></div></li>
+    </ul>
+    <h2>What Gets Posts Indexed on Google</h2>
+    <div class="callout success"><span class="callout-icon">💡</span><div class="callout-body"><strong>Most important insight from 9 months of testing</strong><p>Comment and upvote count alone does NOT determine ranking. A well-optimised post in a big subreddit can index in 2 days with minimal engagement. A poorly written post in a small subreddit may never index regardless of upvotes.</p></div></div>
+    <div class="table-wrap"><table><thead><tr><th>Factor</th><th>Why It Matters</th></tr></thead><tbody>
+      <tr><td>Keyword-dense SEO title</td><td>Google reads the title to understand relevance</td></tr>
+      <tr><td>Long, well-written post body</td><td>Signals quality to Google's crawler</td></tr>
+      <tr><td>Large, active subreddit (1M+ members ideal)</td><td>High-authority source = faster and higher ranking</td></tr>
+      <tr><td>High-karma account posting</td><td>Credibility signal with Reddit's algorithm</td></tr>
+      <tr><td>Early engagement in first 24h</td><td>Google evaluates early traction to rank the post</td></tr>
+    </tbody></table></div>
+    <h2>The Engagement Formula</h2>
+    <ul class="checklist">
+      <li><div class="step-num">1</div><div class="step-content"><strong>Publish from a high-karma account in a large subreddit</strong><span></span></div></li>
+      <li><div class="step-num">2</div><div class="step-content"><strong>First 24h: add comments and upvotes via freelancer</strong><span>Signals early traction to Google and Reddit</span></div></li>
+      <li><div class="step-num">3</div><div class="step-content"><strong>Share via search ads and social</strong><span>Drives additional traffic to boost engagement signal</span></div></li>
+      <li><div class="step-num">4</div><div class="step-content"><strong>Continue adding comments and upvotes weekly</strong><span>Maintains ranking, prevents being overtaken again</span></div></li>
+      <li><div class="step-num">5</div><div class="step-content"><strong>Add backlinks from external sources</strong><span>Strengthens domain authority signal for Google</span></div></li>
+    </ul>
+    <h2>What NOT to Do</h2>
+    <div class="callout danger"><span class="callout-icon">🚫</span><div class="callout-body"><strong>These actions will get you banned or create new damage</strong><p><strong>Have office employees comment from the office</strong> — shared office IP = all accounts get blocked.<br><strong>Use AI-generated text for comments</strong> — Reddit's spam detection is sophisticated.<br><strong>Send users from a single in-app link to comment</strong> — Reddit traces referral patterns, post gets removed.<br><strong>Try to bribe subreddit moderators</strong> — if they publish it, you create a new thread with far more exposure.</p></div></div>
+    <h2>Brand Subreddit (r/coursivofficial)</h2>
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-val">2k+</div><div class="stat-label">Subscribers in 4–5 months</div></div>
+      <div class="stat-card"><div class="stat-val">1.52M</div><div class="stat-label">Views in Q3 2025</div></div>
+      <div class="stat-card"><div class="stat-val">2M+</div><div class="stat-label">Views in Q4 2025</div></div>
+    </div>
+    <h3>What performs best:</h3>
+    <ul class="checklist">
+      <li><div class="step-num">★</div><div class="step-content"><strong>AI-related memes</strong><span>Highest engagement by far</span></div></li>
+      <li><div class="step-num">★</div><div class="step-content"><strong>Reposts of popular content from bigger communities</strong><span>Low effort, proven content = reliable engagement</span></div></li>
+      <li><div class="step-num">★</div><div class="step-content"><strong>Reposts of our content back into bigger communities</strong><span>For reach</span></div></li>
+    </ul>
+    <div class="callout warn"><span class="callout-icon">⚠️</span><div class="callout-body"><strong>Account authenticity rules — critical</strong><p>Spend 2–3 hours/day on Reddit browsing unrelated posts. Always use a US VPN and private browser on a dedicated device. The account must look like a real user, not a brand account.</p></div></div>
+  </div>
+
+  <!-- TOOLS -->
+  <div class="page" id="page-tools">
+    <div class="page-header"><div class="page-eyebrow">Substream 06</div><h1 class="page-title">Tools & Contracts</h1><p class="page-subtitle">Every tool the Reputation Playbook team uses — what it does, when it renews, how much it costs, and where to find invoices.</p></div>
+    <div class="callout warn"><span class="callout-icon">📌</span><div class="callout-body"><strong>Manager responsibilities for all tools</strong><p>Ensure admin access · Monitor renewal dates (30+ days notice for cancellations) · Monitor billing dates · Upload invoices to finance on time · Communicate with vendor account managers</p></div></div>
+    <h2>Paid Subscriptions</h2>
+    <div class="table-wrap"><table><thead><tr><th>Tool</th><th>Purpose</th><th>Plan</th><th>Renewal</th><th>Cost</th></tr></thead><tbody>
+      <tr><td>YouScan</td><td>Social listening + mentions monitoring</td><td>Annual — Listen 5</td><td><span class="badge badge-yellow">July 20, 2026</span></td><td>$8,900/yr</td></tr>
+      <tr><td>AppFollow</td><td>App store + Trustpilot review monitoring and auto-replies</td><td>Annual — Team Plan</td><td><span class="badge badge-yellow">Aug 28, 2026</span></td><td>$9,341/yr</td></tr>
+      <tr><td>Trustpilot</td><td>Review platform</td><td>Annual — Advanced + Connect</td><td><span class="badge badge-blue">Mar 9, 2027</span></td><td>$4,154/qtr · Next: Jun 9 2026</td></tr>
+      <tr><td>SmartCustomer</td><td>Review platform (formerly SiteJabber)</td><td>Annual — Growth Plan</td><td><span class="badge badge-yellow">Jun 17, 2026</span></td><td>$682 x2/qtr (separate Coursiv + Finelo)</td></tr>
+      <tr><td>Reviews.io</td><td>Review platform + invitation campaigns</td><td>Monthly — Growth Plan</td><td>Every 18th of month</td><td>$99/month per product · Cancel anytime</td></tr>
+      <tr><td>ManyChat</td><td>DM automation, comment replies, ad-to-DM flows</td><td>—</td><td>—</td><td>Ask Aliya for details</td></tr>
+    </tbody></table></div>
+    <div class="callout danger"><span class="callout-icon">⏰</span><div class="callout-body"><strong>All annual subscriptions require 30 days cancellation notice</strong><p>Missing this window locks you in for another year. Put calendar reminders 45 days before each renewal date to be safe.</p></div></div>
+    <h2>How to Find Invoices</h2>
+    <div class="table-wrap"><table><thead><tr><th>Tool</th><th>Where to Find the Invoice</th></tr></thead><tbody>
+      <tr><td>YouScan</td><td>Top-left → your name → Account Settings → Billing → Invoice History</td></tr>
+      <tr><td>AppFollow</td><td>Bottom-left → Account → Invoices</td></tr>
+      <tr><td>Trustpilot</td><td>Top-right → Account icon → Plans & Billing → Billing History</td></tr>
+      <tr><td>SmartCustomer</td><td>Top-right → Account → Account Settings → View and Print Invoices</td></tr>
+      <tr><td>Reviews.io</td><td>Bottom-left → Settings → Billing</td></tr>
+      <tr><td>ManyChat</td><td>Request directly from Aliya</td></tr>
+    </tbody></table></div>
+    <h2>Logging In</h2>
+    <div class="callout success"><span class="callout-icon">🔑</span><div class="callout-body"><strong>Most tools use Google login</strong><p>YouScan, AppFollow, and Trustpilot all support "Login with Google." For all other platforms (SmartCustomer, Reviews.io, HelloPeter, BBB, Reddit), ask your manager for access via the team password manager. Never store or share passwords in plain text.</p></div></div>
+    <h2>Full Tool Reference</h2>
+    <div class="table-wrap"><table><thead><tr><th>Tool</th><th>Primary Use</th><th>Who Uses It</th></tr></thead><tbody>
+      <tr><td>YouScan</td><td>Monitor all brand mentions across the internet</td><td>Manager + Community Agent</td></tr>
+      <tr><td>AppFollow</td><td>Monitor + auto-reply to App Store, Google Play, Trustpilot reviews</td><td>Maira + Manager</td></tr>
+      <tr><td>ManyChat</td><td>Automate DM flows, comment replies, ad sequences</td><td>Aliya</td></tr>
+      <tr><td>Napoleon Cat</td><td>Unified Instagram + Facebook inbox</td><td>Aliya</td></tr>
+      <tr><td>Trustpilot</td><td>External review platform for web app users</td><td>Maira</td></tr>
+      <tr><td>SmartCustomer</td><td>External review platform</td><td>Maira</td></tr>
+      <tr><td>Reviews.io</td><td>External review platform + invitation campaigns</td><td>Maira</td></tr>
+      <tr><td>HelloPeter</td><td>South Africa-focused review platform</td><td>Maira</td></tr>
+      <tr><td>BBB</td><td>US/Canada complaints platform with legal weight</td><td>Maira</td></tr>
+      <tr><td>Amplitude</td><td>Pull happy user lists for invitation campaigns</td><td>Maira</td></tr>
+      <tr><td>Iterable</td><td>Send BBB review invitation emails (Finelo)</td><td>Maira</td></tr>
+      <tr><td>PeopleForce</td><td>Hiring: test assignments, interviews, onboarding</td><td>Manager</td></tr>
+    </tbody></table></div>
+    <h2>Vendor Contacts</h2>
+    <div class="table-wrap"><table><thead><tr><th>Tool</th><th>Account Manager</th><th>Email</th></tr></thead><tbody>
+      <tr><td>YouScan</td><td>Anastasiia Zhurakovska</td><td>anastasiia.zhurakovska@youscan.io</td></tr>
+      <tr><td>AppFollow</td><td>Nida Icyer</td><td>nida.icyer@appfollow.io</td></tr>
+      <tr><td>Trustpilot</td><td>Sabrina Longo</td><td>sabl@trustpilot.com</td></tr>
+      <tr><td>SmartCustomer</td><td>Christina Raggi</td><td>christina.raggi@sitejabber.com</td></tr>
+      <tr><td>Reviews.io</td><td>No account manager</td><td>Self-serve via platform</td></tr>
+    </tbody></table></div>
+  </div>
+
+</div>
+<script>
+  const pages={home:{id:'page-home',label:'Overview'},daily:{id:'page-daily',label:'Daily Operations'},reviews:{id:'page-reviews',label:'Reviews Stream'},sentiment:{id:'page-sentiment',label:'Mentions & Sentiment'},community:{id:'page-community',label:'Community & DMs'},reddit:{id:'page-reddit',label:'Reddit Management'},tools:{id:'page-tools',label:'Tools & Contracts'}};
+  function navigate(key,navEl){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById(pages[key].id).classList.add('active');if(navEl)navEl.classList.add('active');document.getElementById('topbar-title').innerHTML=`Reputation Playbook &nbsp;/&nbsp; <span>${pages[key].label}</span>`;document.querySelector('.main').scrollTo({top:0,behavior:'smooth'});closeSidebar()}
+  function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').classList.add('visible')}
+  function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('visible')}
+</script>
+</body>
+</html>
